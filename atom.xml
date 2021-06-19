@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>豆 扁</title>
+  
+  
+  <link href="http://example.com/atom.xml" rel="self"/>
+  
+  <link href="http://example.com/"/>
+  <updated>2021-06-19T02:38:05.182Z</updated>
+  <id>http://example.com/</id>
+  
+  <author>
+    <name>Bian Dou</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>浅读AQS原理（一）</title>
+    <link href="http://example.com/2021/06/19/%E6%B5%85%E8%AF%BBAQS%E5%8E%9F%E7%90%86%EF%BC%88%E4%B8%80%EF%BC%89/"/>
+    <id>http://example.com/2021/06/19/%E6%B5%85%E8%AF%BBAQS%E5%8E%9F%E7%90%86%EF%BC%88%E4%B8%80%EF%BC%89/</id>
+    <published>2021-06-18T16:21:06.000Z</published>
+    <updated>2021-06-19T02:38:05.182Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;1、什么是AQS&quot;&gt;&lt;a href=&quot;#1、什么是AQS&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="并发编程" scheme="http://example.com/categories/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/"/>
+    
+    
+    <category term="并发编程" scheme="http://example.com/tags/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/"/>
+    
+  </entry>
+  
+</feed>
