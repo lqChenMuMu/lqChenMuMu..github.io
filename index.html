@@ -140,6 +140,98 @@
     
     
     <article
+  id="post-volatile"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/2021/06/21/volatile/"
+    >volatile</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/2021/06/21/volatile/" class="article-date">
+  <time datetime="2021-06-21T15:15:56.000Z" itemprop="datePublished">2021-06-21</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/">并发编程</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h2 id="1、多线程情况下出现的问题"><a href="#1、多线程情况下出现的问题" class="headerlink" title="1、多线程情况下出现的问题"></a>1、多线程情况下出现的问题</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">VolatileTest</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Integer  num = <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line"></span><br><span class="line">        Handler handler = <span class="keyword">new</span> Handler();</span><br><span class="line">        handler.start();</span><br><span class="line">        <span class="keyword">for</span> (;;)&#123;</span><br><span class="line">            <span class="keyword">if</span>(num &gt;<span class="number">0</span>)&#123;</span><br><span class="line">                System.out.println(<span class="string">&quot;111&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Handler</span> <span class="keyword">extends</span> <span class="title">Thread</span></span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@SneakyThrows</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            Thread.sleep(<span class="number">500</span>);</span><br><span class="line">            num ++;</span><br><span class="line">            System.out.println(<span class="string">&quot;change:&quot;</span>+num);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的代码永远都不可能打印“111”</p>
+<h2 id="2、现代计算机内存模型"><a href="#2、现代计算机内存模型" class="headerlink" title="2、现代计算机内存模型"></a>2、现代计算机内存模型</h2><p>现代的计算机由于cpu效率要比内存快很多，为了避免cpu频繁等待内存读写，不得不设计出一块<strong>高速缓存（Cache）</strong>作为内存和cpu之间的缓冲。cpu在读取实例变量或者类变量的时候会首先去读高速缓存中的数据，如果没有再去内存中找，将内存中的数据拷贝一份到高速缓存中来，操作完之后会<strong>不定时</strong>的将高速缓存中的值刷新到变量副本中。</p>
+<h2 id="3、java内存模型"><a href="#3、java内存模型" class="headerlink" title="3、java内存模型"></a>3、java内存模型</h2><p>java内存模型（jmm），是多线程情况下访问数据的一套规范，不与硬件产生一对一的对应关系。每个线程都对应一块单独的工作内存，在使用共享变量的时候需要从主存拷贝一个变量副本到工作空间，线程只能在自己的工作内存中完成所有操作（读，写），一个线程不能之间访问另一个线程的工作空间。</p>
+<p>正是在这样的模型下会出现一些问题：</p>
+<p>场景：线程1和线程2都需要读取主存中的一个共享变量（num = 0）</p>
+<p>问题1：线程1读取并修改了变量num的值等于1，但是没刷新到主存，线程2这时候来主存获取num值仍然是0</p>
+<p>问题2：线程1读取并修改了变量num的值等于1，并且刷新到了主存，但是线程2在线程1刷新到主存之前就获取num=0，此时线程2不知道值已被改变</p>
+<p>上述的问题就是多线程场景下可能出现的可见性问题</p>
+<h3 id="4、volatile解决的问题"><a href="#4、volatile解决的问题" class="headerlink" title="4、volatile解决的问题"></a>4、volatile解决的问题</h3><p><strong>使用volatile关键字修饰共享变量，解决可见性问题</strong></p>
+<p>1、被volatile修饰的共享变量在工作线程中被修改过后会被立刻强制刷新到主存中去（解决上述出现的问题1）</p>
+<p>2、强制刷新到主存中之后，还有可能会出现上述的问题2，如何保证各个线程的工作空间的缓存缓存一致性问题。MSEI(缓存一致性协议)，为了保证缓存一致性，cpu每个处理器之间制定的一个协议，当cpu在写一个变量是，如果是共享变量且存在其他变量副本，则会通知其他变量副本失效。</p>
+<p>3、嗅探机制：每个处理器在总线上检查自己缓存的值是否过期，内存地址是否被更改，如果有更改则将缓存的值失效，下次需要使用的时候直接去主存读取（2-3解决上述问题2）</p>
+<p><strong>使用volatile关键字修饰共享变量，防止指令重排序</strong></p>
+<p>比如我们在使用双重检测锁的方式实现单例模式的时候</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SingleTest</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">volatile</span> <span class="keyword">static</span> SingleInstance singleInstance = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">SingleTest</span><span class="params">()</span> </span>&#123;&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> SingleInstance <span class="title">getInstance</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (singleInstance != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> singleInstance;</span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (SingleTest.class)&#123;</span><br><span class="line">                <span class="keyword">if</span>(singleInstance != <span class="keyword">null</span>)&#123;</span><br><span class="line">                    <span class="keyword">return</span> singleInstance;</span><br><span class="line">                &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                    singleInstance = <span class="keyword">new</span> SingleInstance();</span><br><span class="line">                    <span class="keyword">return</span> singleInstance;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果不使用volatile关键字修饰单例变量，那么就有可能在new Singlestance()方法处出现问题。</p>
+<p>正常的实例化对象的流程：</p>
+<p>1、给实例开辟内存空间</p>
+<p>2、实例初始化赋值</p>
+<p>3、变量指向内存地址</p>
+<p>由于JIT即时编译器的优化，在基于<code>as-if-serial</code>（不管如何重排序，单线程下的执行结果不能改变）的原则下，实例化对象的流程可能变成这样：</p>
+<p>1、给实例开辟内存空间</p>
+<p>2、变量指向内存地址</p>
+<p>3、实例初始化赋值</p>
+<p>此时如果刚好第2步执行完，时间片切换，下一个线程发现对象不为空。直接返回一个空的对象出去，此时就会发生空指针异常</p>
+<p><strong>volatile使用内存屏障来阻止指令重拍</strong></p>
+<p>volatile修饰的共享变量在读写的前后会加上内存屏障，屏障中的操作被禁止指令重拍</p>
+<h2 id="5、知识点"><a href="#5、知识点" class="headerlink" title="5、知识点"></a>5、知识点</h2><p>1、volatile修饰的变量被修改会立刻强制刷回主存</p>
+<p>2、处理器会通过嗅探机制判断自己的缓存是否失效</p>
+<p>3、volatile不能保证原子性</p>
+<p>4、volatile解决了可见性问题，和单例模式下的指令重排问题</p>
+<p><strong>ps: 写测试代码过程中出现的问题</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">VolatileTest</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Integer num = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line"></span><br><span class="line">        Handler handler = <span class="keyword">new</span> Handler();</span><br><span class="line">        handler.start();</span><br><span class="line">        <span class="keyword">for</span> (; ; ) &#123;</span><br><span class="line">        	<span class="comment">// 使用println输出共享变量，共享变量不加volatile关键字也没有可见性问题</span></span><br><span class="line">            System.out.println(num);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Handler</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@SneakyThrows</span></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            Thread.sleep(<span class="number">500</span>);</span><br><span class="line">            num++;</span><br><span class="line">            System.out.println(<span class="string">&quot;change:&quot;</span> + num);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">println</span><span class="params">(String x)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">            print(x);</span><br><span class="line">            newLine();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后先<code>println</code>方法中使用了<code>synchronize</code>关键字，所以在获取同步锁之后会清空工作空间中的缓存，再将要使用的变量从主存中拷贝到工作内存，所以此时打印的变量值是最新的值</p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" rel="tag">并发编程</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-JUC常用工具类"
   class="article article-type-post"
   itemscope
