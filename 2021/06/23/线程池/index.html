@@ -11,7 +11,7 @@
         name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1"
       />
-      <title>synchronize |  豆 扁</title>
+      <title>线程池 |  豆 扁</title>
   <meta name="generator" content="hexo-theme-ayer">
       
       <link rel="shortcut icon" href="/favicon.ico" />
@@ -44,7 +44,7 @@
     <main class="content on">
       <section class="outer">
   <article
-  id="post-synchronize"
+  id="post-线程池"
   class="article article-type-post"
   itemscope
   itemprop="blogPost"
@@ -55,7 +55,7 @@
     <header class="article-header">
        
 <h1 class="article-title sea-center" style="border-left:0" itemprop="name">
-  synchronize
+  线程池
 </h1>
  
 
@@ -63,8 +63,8 @@
     </header>
      
     <div class="article-meta">
-      <a href="/2021/06/22/synchronize/" class="article-date">
-  <time datetime="2021-06-22T15:59:20.000Z" itemprop="datePublished">2021-06-22</time>
+      <a href="/2021/06/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0/" class="article-date">
+  <time datetime="2021-06-23T12:39:25.000Z" itemprop="datePublished">2021-06-23</time>
 </a> 
   <div class="article-category">
     <a class="article-category-link" href="/categories/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/">并发编程</a>
@@ -75,7 +75,7 @@
         <span class="post-meta-item-icon">
             <i class="ri-quill-pen-line"></i>
             <span class="post-meta-item-text"> Word count:</span>
-            <span class="post-count">1.7k</span>
+            <span class="post-count">764</span>
         </span>
     </span>
 
@@ -84,7 +84,7 @@
         <span class="post-meta-item-icon">
             <i class="ri-book-open-line"></i>
             <span class="post-meta-item-text"> Reading time≈</span>
-            <span class="post-count">6 min</span>
+            <span class="post-count">2 min</span>
         </span>
     </span>
 </div>
@@ -99,66 +99,40 @@
   
     <div class="article-entry" itemprop="articleBody">
        
-  <h2 id="1、Synchronize使用"><a href="#1、Synchronize使用" class="headerlink" title="1、Synchronize使用"></a>1、Synchronize使用</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 修饰静态方法，给方法对应的class对象加锁</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> synchronize staic <span class="keyword">void</span> <span class="title">Test</span><span class="params">()</span></span>&#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 修饰普通方法，给方法对应的实例对象加锁</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> synchornize <span class="keyword">void</span> <span class="title">Test</span><span class="params">()</span></span>&#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 修饰代码块，给方法对应的class对象加锁</span></span><br><span class="line">synchornize(Test.class)&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 修饰代码块，给方法对应的实例对象加锁(注意：错误的加锁方式，每次加锁都是一个新的实例，等于没加锁)</span></span><br><span class="line">synchornize(<span class="keyword">new</span> Test())&#123;&#125;</span><br></pre></td></tr></table></figure>
+  <h2 id="1、为什么使用线程池"><a href="#1、为什么使用线程池" class="headerlink" title="1、为什么使用线程池"></a>1、为什么使用线程池</h2><p>原因：频繁的创建线程销毁线程，会消耗系统资源，降低系统稳定性</p>
+<p>优点：1、降低频繁创建销毁线程的资源消耗</p>
+<p>​            2、使用已有的线程执行任务，减少创建线程步骤，减少响应时间</p>
+<p>​            3、提高线程可管理性</p>
+<h2 id="2、线程池核心参数"><a href="#2、线程池核心参数" class="headerlink" title="2、线程池核心参数"></a>2、线程池核心参数</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ThreadPoolExecutor</span><span class="params">(<span class="keyword">int</span> corePoolSize,</span></span></span><br><span class="line"><span class="params"><span class="function">                              <span class="keyword">int</span> maximumPoolSize,</span></span></span><br><span class="line"><span class="params"><span class="function">                              <span class="keyword">long</span> keepAliveTime,</span></span></span><br><span class="line"><span class="params"><span class="function">                              TimeUnit unit,</span></span></span><br><span class="line"><span class="params"><span class="function">                              BlockingQueue&lt;Runnable&gt; workQueue,</span></span></span><br><span class="line"><span class="params"><span class="function">                              ThreadFactory threadFactory,</span></span></span><br><span class="line"><span class="params"><span class="function">                              RejectedExecutionHandler handler)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (corePoolSize &lt; <span class="number">0</span> ||</span><br><span class="line">            maximumPoolSize &lt;= <span class="number">0</span> ||</span><br><span class="line">            maximumPoolSize &lt; corePoolSize ||</span><br><span class="line">            keepAliveTime &lt; <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException();</span><br><span class="line">        <span class="keyword">if</span> (workQueue == <span class="keyword">null</span> || threadFactory == <span class="keyword">null</span> || handler == <span class="keyword">null</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</span><br><span class="line">        <span class="keyword">this</span>.acc = System.getSecurityManager() == <span class="keyword">null</span> ?</span><br><span class="line">                <span class="keyword">null</span> :</span><br><span class="line">                AccessController.getContext();</span><br><span class="line">        <span class="keyword">this</span>.corePoolSize = corePoolSize;</span><br><span class="line">        <span class="keyword">this</span>.maximumPoolSize = maximumPoolSize;</span><br><span class="line">        <span class="keyword">this</span>.workQueue = workQueue;</span><br><span class="line">        <span class="keyword">this</span>.keepAliveTime = unit.toNanos(keepAliveTime);</span><br><span class="line">        <span class="keyword">this</span>.threadFactory = threadFactory;</span><br><span class="line">        <span class="keyword">this</span>.handler = handler;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 
-
-
-<h2 id="2、Synchronize保证的特性"><a href="#2、Synchronize保证的特性" class="headerlink" title="2、Synchronize保证的特性"></a>2、Synchronize保证的特性</h2><ul>
-<li>有序性：在synchronize代码块中加入屏障，代码块中的读操作和写操作之间禁止指令重排</li>
-<li>可见性：线程获取到锁之后，清空工作内存中的缓存，使用到变量的时候重新去主存中获取，释放锁之前将缓存中的值强制刷新到主存中</li>
-<li>原子性：一次只允许一个线程获得锁</li>
-<li>可重入性：维护一个计数器，未加锁之前计数器为0，加锁一次计数器加1，同一个线程重入继续加1，释放一次锁极速器减一，直到计数器为0时，其他线程才可以抢占锁</li>
-<li>不可中断性：一个线程获取锁之后，在未释放之前，其他线程一直等待，不可能中断</li>
-</ul>
-<h2 id="3、Synchronize执行原理"><a href="#3、Synchronize执行原理" class="headerlink" title="3、Synchronize执行原理"></a>3、Synchronize执行原理</h2><ul>
-<li><p>  java对象存储结构</p>
-<pre><code>  ![](https://blog-cl.oss-cn-shenzhen.aliyuncs.com/java%E5%AF%B9%E8%B1%A1%E7%BB%93%E6%9E%84.png)
-</code></pre>
+<ul>
+<li><p><strong>corePoolSize</strong>：线程池核心线程数，比喻为一个公司的正式员工</p>
+</li>
+<li><p><strong>maximumPoolSize</strong>：线程池最大线程数，比喻为一个公司的正式员工+临时外包员工的总数</p>
+</li>
+<li><p><strong>keepAliveTime + unit：</strong>超过线程池核心线程数之外部分的线程多长时间没有执行任务就被销毁</p>
+</li>
+<li><p><strong>workQueue</strong>：线程池核心线程满之后，将后来的任务放入队列中排队等待执行。</p>
+<p> 1、ArrayBlockingQueue：基于数组结构的有界阻塞队列，按FIFO排序任务；<br> 2、LinkedBlockingQuene：基于链表结构的阻塞队列，按FIFO排序任务，吞吐量通常要高于ArrayBlockingQueue;<br> 3、SynchronousQuene：一个不存储元素的阻塞队列，每个插入操作必须等到另一个线程调用移除操作，否则插入操作一直处于阻塞状态，吞吐量通常要高于LinkedBlockingQuene；<br> 4、priorityBlockingQuene：具有优先级的无界阻塞队列；</p>
+</li>
+<li><p><strong>threadFactory</strong>：线程工厂，可以使用ThreadFactoryBuilder创建，主要用于创建线程时给线程规范命名</p>
+</li>
+<li><p><strong>RejectedExecutionHandler</strong>：线程池到达最大线程数，且工作队列已满之后的拒绝策略</p>
+<p>1、AbortPolicy: 丢弃任务并抛出RejectedExecutionException异常</p>
+<p>2、DiscardPolicy：丢弃任务，但是不抛出异常。如果线程队列已满，则后续提交的任务都会被丢弃，且是静默丢弃</p>
+<p>3、DiscardOldestPolicy：丢弃队列最前面的任务，然后重新提交被拒绝的任务</p>
+<p>4、CallerRunsPolicy：由调用线程处理该任务</p>
+<p>5、创建自定义拒绝策略实现RejectedExecutionHandler接口</p>
 </li>
 </ul>
-<blockquote>
-<p>tip: 一个空的java对象占用8个字节，因为对齐填充</p>
-</blockquote>
-<p>1、通过monitorenter字节码指令获取对象对应的monitor对象（每个java对象天生自带一个monitor对象）</p>
-<p>2、在monitor对象中保存线程占有信息</p>
-<p>3、如果再次获取锁时，发现monitor对象中的占有线程是当前线程，计数器+1</p>
-<p>4、通过monitorexist字节码指令释放锁，计数器-1</p>
-<h2 id="4、Synchronize锁升级"><a href="#4、Synchronize锁升级" class="headerlink" title="4、Synchronize锁升级"></a>4、Synchronize锁升级</h2><p>为什么有锁升级：jdk1.5之前Synchronize都是使用重锁，但是因为线程的阻塞和唤起操作需要来用户态和内核态之前来回切换，切换过程会消耗大量的系统资源，所以jdk1.6之后增加了Synchronize锁升级机制</p>
-<p>升级过程：  无锁   =》 偏向锁  =》 轻量锁  =》  重量锁</p>
-<ul>
-<li><h4 id="偏向锁"><a href="#偏向锁" class="headerlink" title="偏向锁"></a>偏向锁</h4></li>
-</ul>
-<p><strong>为什么有偏向锁：</strong>因为经过HotSpot的作者大量的研究发现，大多数时候是不存在锁竞争的，常常是一个线程多次获得同一个锁，因此如果每次都要竞争锁会增大很多没有必要付出的代价，为了降低获取锁的代价，才引入的偏向锁</p>
-<p><strong>偏向锁原理：</strong>当线程1访问代码块并获取锁对象时，会在java对象头和栈帧中记录偏向的锁的threadID，因为偏向锁不会主动释放锁，因此以后线程1再次获取锁的时候，需要比较当前线程的threadID和Java对象头中的threadID是否一致，如果一致（还是线程1获取锁对象），则无需使用CAS来加锁、解锁；如果不一致（其他线程，如线程2要竞争锁对象，而偏向锁不会主动释放因此还是存储的线程1的threadID），那么需要查看Java对象头中记录的线程1是否存活，如果没有存活，那么锁对象被重置为无锁状态，其它线程（线程2）可以竞争将其设置为偏向锁；如果存活，那么立刻查找该线程（线程1）的栈帧信息，如果还是需要继续持有这个锁对象，那么暂停当前线程1，撤销偏向锁，升级为轻量级锁，如果线程1 不再使用该锁对象，那么将锁对象状态设为无锁状态，重新偏向新的线程。</p>
-<ul>
-<li><h4 id="轻量锁"><a href="#轻量锁" class="headerlink" title="轻量锁"></a>轻量锁</h4></li>
-</ul>
-<p><strong>为什么有轻量级锁：</strong>轻量级锁考虑的是竞争锁对象的线程不多，而且线程持有锁的时间也不长的情景。因为阻塞线程需要CPU从用户态转到内核态，代价较大，如果刚刚阻塞不久这个锁就被释放了，那这个代价就有点得不偿失了，因此这个时候就干脆不阻塞这个线程，让它自旋这等待锁释放。</p>
-<p><strong>轻量锁原理及升级过程：</strong>线程1获取轻量级锁时会先把锁对象的对象头MarkWord复制一份到线程1的栈帧中创建的用于存储锁记录的空间（称为DisplacedMarkWord），然后使用CAS把对象头中的内容替换为线程1存储的锁记录（DisplacedMarkWord）的地址；</p>
-<p>如果在线程1复制对象头的同时（在线程1CAS之前），线程2也准备获取锁，复制了对象头到线程2的锁记录空间中，但是在线程2CAS的时候，发现线程1已经把对象头换了，线程2的CAS失败，那么线程2就尝试使用自旋锁来等待线程1释放锁。 自旋锁简单来说就是让线程2在循环中不断CAS（默认10次升级为重量锁）</p>
-<ul>
-<li><h4 id="重量锁"><a href="#重量锁" class="headerlink" title="重量锁"></a>重量锁</h4></li>
-</ul>
-<p><strong>为什么有轻量级锁</strong>：但是如果自旋的时间太长也不行，因为自旋是要消耗CPU的，因此自旋的次数是有限制的，比如10次或者100次，如果自旋次数到了线程1还没有释放锁，或者线程1还在执行，线程2还在自旋等待，这时又有一个线程3过来竞争这个锁对象，那么这个时候轻量级锁就会膨胀为重量级锁。重量级锁把除了拥有锁的线程都阻塞，防止CPU空转</p>
-<p><img src="https://blog-cl.oss-cn-shenzhen.aliyuncs.com/%E9%94%81%E4%BC%98%E5%8A%A3%E5%8A%BF.png"></p>
-<h2 id="5、synchronize和Lock锁的区别"><a href="#5、synchronize和Lock锁的区别" class="headerlink" title="5、synchronize和Lock锁的区别"></a>5、synchronize和Lock锁的区别</h2><p>1、synchronize是jvm层面关键字，Lock是一个接口，jdk提供了许多api</p>
-<p>2、synchronize自动加锁释放锁，Lock需要手动</p>
-<p>3、synchronize不可中断，lock可中断</p>
-<p>4、synchronize是非公平锁，lock可以配置实现公平还是非公平锁</p>
-<p>5、lock更加灵活，有丰富的api使用</p>
-<h2 id="6、tips"><a href="#6、tips" class="headerlink" title="6、tips"></a>6、tips</h2><ul>
-<li>错误的加锁方式</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 每次调用创建的是不同的锁，相当于无锁</span></span><br><span class="line"><span class="keyword">synchronized</span> (<span class="keyword">new</span> Object())</span><br></pre></td></tr></table></figure>
+<h2 id="3、线程池执行流程"><a href="#3、线程池执行流程" class="headerlink" title="3、线程池执行流程"></a>3、线程池执行流程</h2><p><img src="https://blog-cl.oss-cn-shenzhen.aliyuncs.com/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B"></p>
+<h2 id="4、submit和execute的区别"><a href="#4、submit和execute的区别" class="headerlink" title="4、submit和execute的区别"></a>4、submit和execute的区别</h2><p>1、execute方法只能传入Runnable类型的任务，execute可以传入Runnable类型和Callable类型的任务</p>
+<p>1、execute方法不返回执行结果，submit方法返回Future对象（之后传入Callable类型任务才会有返回结果，否则future.get()返回null）</p>
+<p>2、execute方法任务执行过程中异常会抛出，submit方法任务执行过程中的异常会被捕获然后返回到Future对象中</p>
+<p>3、submit方法提交任务需要判断返回对象是否异常，或者直接给线程工厂设置异常处理例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ThreadFactory namedThreadFactory = <span class="keyword">new</span> ThreadFactoryBuilder()</span><br><span class="line">                .setNameFormat(<span class="string">&quot;judge-pool-%d&quot;</span>)</span><br><span class="line">                .setUncaughtExceptionHandler((thread, throwable)-&gt; logger.error(<span class="string">&quot;ThreadPool &#123;&#125; got exception&quot;</span>, thread,throwable))</span><br><span class="line">                .build();</span><br></pre></td></tr></table></figure>
 
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> Integer count;</span><br><span class="line"><span class="comment">// String，Boolean在实现了都用了享元模式，即值在一定范围内，对象是同一个。所以看似是用了不同的对象，其实用的是同一个对象。会导致一个锁被多个地方使用</span></span><br><span class="line"><span class="keyword">synchronized</span> (count)</span><br></pre></td></tr></table></figure>
-
-
-
-<ul>
-<li>synchronized锁升级优化性能提升的体现</li>
-</ul>
-<p>ConcurrentHashMap在jdk1.7的时候，实现用的是分段锁，用ReentrantLock来保证并发安全。<br>而在jdk1.8的时候，抛弃了原有的分段锁，而采用了 CAS + synchronized 来保证并发安全性，也可以说明synchronized的的效率现在确实很高了。</p>
+<p>这样就可以在任务执行异常后答应异常日志</p>
  
       <!-- reward -->
       
@@ -223,7 +197,7 @@
     <a class="modal-close" href="javascript:;"><i class="ri-close-circle-line"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://example.com/2021/06/22/synchronize/" alt="微信分享二维码">
+      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://example.com/2021/06/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -236,19 +210,10 @@
    
   <nav class="article-nav">
     
-      <a href="/2021/06/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0/" class="article-nav-link">
-        <strong class="article-nav-caption">上一篇</strong>
-        <div class="article-nav-title">
-          
-            线程池
-          
-        </div>
-      </a>
     
-    
-      <a href="/2021/06/21/volatile/" class="article-nav-link">
+      <a href="/2021/06/22/synchronize/" class="article-nav-link">
         <strong class="article-nav-caption">下一篇</strong>
-        <div class="article-nav-title">volatile</div>
+        <div class="article-nav-title">synchronize</div>
       </a>
     
   </nav>

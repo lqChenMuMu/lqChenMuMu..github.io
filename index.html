@@ -140,6 +140,92 @@
     
     
     <article
+  id="post-线程池"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/2021/06/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0/"
+    >线程池</a> 
+</h2>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/2021/06/23/%E7%BA%BF%E7%A8%8B%E6%B1%A0/" class="article-date">
+  <time datetime="2021-06-23T12:39:25.000Z" itemprop="datePublished">2021-06-23</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/">并发编程</a>
+  </div>
+   
+    </div>
+      
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h2 id="1、为什么使用线程池"><a href="#1、为什么使用线程池" class="headerlink" title="1、为什么使用线程池"></a>1、为什么使用线程池</h2><p>原因：频繁的创建线程销毁线程，会消耗系统资源，降低系统稳定性</p>
+<p>优点：1、降低频繁创建销毁线程的资源消耗</p>
+<p>​            2、使用已有的线程执行任务，减少创建线程步骤，减少响应时间</p>
+<p>​            3、提高线程可管理性</p>
+<h2 id="2、线程池核心参数"><a href="#2、线程池核心参数" class="headerlink" title="2、线程池核心参数"></a>2、线程池核心参数</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ThreadPoolExecutor</span><span class="params">(<span class="keyword">int</span> corePoolSize,</span></span></span><br><span class="line"><span class="params"><span class="function">                              <span class="keyword">int</span> maximumPoolSize,</span></span></span><br><span class="line"><span class="params"><span class="function">                              <span class="keyword">long</span> keepAliveTime,</span></span></span><br><span class="line"><span class="params"><span class="function">                              TimeUnit unit,</span></span></span><br><span class="line"><span class="params"><span class="function">                              BlockingQueue&lt;Runnable&gt; workQueue,</span></span></span><br><span class="line"><span class="params"><span class="function">                              ThreadFactory threadFactory,</span></span></span><br><span class="line"><span class="params"><span class="function">                              RejectedExecutionHandler handler)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (corePoolSize &lt; <span class="number">0</span> ||</span><br><span class="line">            maximumPoolSize &lt;= <span class="number">0</span> ||</span><br><span class="line">            maximumPoolSize &lt; corePoolSize ||</span><br><span class="line">            keepAliveTime &lt; <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException();</span><br><span class="line">        <span class="keyword">if</span> (workQueue == <span class="keyword">null</span> || threadFactory == <span class="keyword">null</span> || handler == <span class="keyword">null</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</span><br><span class="line">        <span class="keyword">this</span>.acc = System.getSecurityManager() == <span class="keyword">null</span> ?</span><br><span class="line">                <span class="keyword">null</span> :</span><br><span class="line">                AccessController.getContext();</span><br><span class="line">        <span class="keyword">this</span>.corePoolSize = corePoolSize;</span><br><span class="line">        <span class="keyword">this</span>.maximumPoolSize = maximumPoolSize;</span><br><span class="line">        <span class="keyword">this</span>.workQueue = workQueue;</span><br><span class="line">        <span class="keyword">this</span>.keepAliveTime = unit.toNanos(keepAliveTime);</span><br><span class="line">        <span class="keyword">this</span>.threadFactory = threadFactory;</span><br><span class="line">        <span class="keyword">this</span>.handler = handler;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><strong>corePoolSize</strong>：线程池核心线程数，比喻为一个公司的正式员工</p>
+</li>
+<li><p><strong>maximumPoolSize</strong>：线程池最大线程数，比喻为一个公司的正式员工+临时外包员工的总数</p>
+</li>
+<li><p><strong>keepAliveTime + unit：</strong>超过线程池核心线程数之外部分的线程多长时间没有执行任务就被销毁</p>
+</li>
+<li><p><strong>workQueue</strong>：线程池核心线程满之后，将后来的任务放入队列中排队等待执行。</p>
+<p> 1、ArrayBlockingQueue：基于数组结构的有界阻塞队列，按FIFO排序任务；<br> 2、LinkedBlockingQuene：基于链表结构的阻塞队列，按FIFO排序任务，吞吐量通常要高于ArrayBlockingQueue;<br> 3、SynchronousQuene：一个不存储元素的阻塞队列，每个插入操作必须等到另一个线程调用移除操作，否则插入操作一直处于阻塞状态，吞吐量通常要高于LinkedBlockingQuene；<br> 4、priorityBlockingQuene：具有优先级的无界阻塞队列；</p>
+</li>
+<li><p><strong>threadFactory</strong>：线程工厂，可以使用ThreadFactoryBuilder创建，主要用于创建线程时给线程规范命名</p>
+</li>
+<li><p><strong>RejectedExecutionHandler</strong>：线程池到达最大线程数，且工作队列已满之后的拒绝策略</p>
+<p>1、AbortPolicy: 丢弃任务并抛出RejectedExecutionException异常</p>
+<p>2、DiscardPolicy：丢弃任务，但是不抛出异常。如果线程队列已满，则后续提交的任务都会被丢弃，且是静默丢弃</p>
+<p>3、DiscardOldestPolicy：丢弃队列最前面的任务，然后重新提交被拒绝的任务</p>
+<p>4、CallerRunsPolicy：由调用线程处理该任务</p>
+<p>5、创建自定义拒绝策略实现RejectedExecutionHandler接口</p>
+</li>
+</ul>
+<h2 id="3、线程池执行流程"><a href="#3、线程池执行流程" class="headerlink" title="3、线程池执行流程"></a>3、线程池执行流程</h2><p><img src="https://blog-cl.oss-cn-shenzhen.aliyuncs.com/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B"></p>
+<h2 id="4、submit和execute的区别"><a href="#4、submit和execute的区别" class="headerlink" title="4、submit和execute的区别"></a>4、submit和execute的区别</h2><p>1、execute方法只能传入Runnable类型的任务，execute可以传入Runnable类型和Callable类型的任务</p>
+<p>1、execute方法不返回执行结果，submit方法返回Future对象（之后传入Callable类型任务才会有返回结果，否则future.get()返回null）</p>
+<p>2、execute方法任务执行过程中异常会抛出，submit方法任务执行过程中的异常会被捕获然后返回到Future对象中</p>
+<p>3、submit方法提交任务需要判断返回对象是否异常，或者直接给线程工厂设置异常处理例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ThreadFactory namedThreadFactory = <span class="keyword">new</span> ThreadFactoryBuilder()</span><br><span class="line">                .setNameFormat(<span class="string">&quot;judge-pool-%d&quot;</span>)</span><br><span class="line">                .setUncaughtExceptionHandler((thread, throwable)-&gt; logger.error(<span class="string">&quot;ThreadPool &#123;&#125; got exception&quot;</span>, thread,throwable))</span><br><span class="line">                .build();</span><br></pre></td></tr></table></figure>
+
+<p>这样就可以在任务执行异常后答应异常日志</p>
+ 
+      <!-- reward -->
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <footer class="article-footer">
+       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" rel="tag">并发编程</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+    
+</article>
+
+    
+    <article
   id="post-synchronize"
   class="article article-type-post"
   itemscope
